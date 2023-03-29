@@ -10,7 +10,7 @@ import math
 from functools import lru_cache, wraps
 from functools import partial as p
 from itertools import repeat
-from typing import Any, Callable, Dict, Iterable, Iterator, List, MutableSequence, Optional, Sequence, Tuple, Literal
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Literal, MutableSequence, Optional, Sequence, Tuple
 
 scale = (0.001, 1., 1.5, 2.)
 shade_transparency = False
