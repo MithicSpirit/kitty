@@ -816,8 +816,6 @@ def compile_kittens(compilation_database: CompilationDatabase) -> None:
         return kitten, sources, headers, f'kittens/{kitten}/{output}', includes, libraries
 
     for kitten, sources, all_headers, dest, includes, libraries in (
-        files('unicode_input', 'unicode_names'),
-        files('diff', 'diff_speedup'),
         files('transfer', 'rsync', libraries=('rsync',)),
     ):
         final_env = kenv.copy()
@@ -894,6 +892,13 @@ def update_go_generated_files(args: Options, kitty_exe: str) -> None:
         raise SystemExit(cp.returncode)
 
 
+def parse_go_version(x: str) -> Tuple[int, int, int]:
+    ans = list(map(int, x.split('.')))
+    while len(ans) < 3:
+        ans.append(0)
+    return ans[0], ans[1], ans[2]
+
+
 def build_static_kittens(
     args: Options, launcher_dir: str, destination_dir: str = '', for_freeze: bool = False,
     for_platform: Optional[Tuple[str, str]] = None
@@ -903,6 +908,10 @@ def build_static_kittens(
     go = shutil.which('go')
     if not go:
         raise SystemExit('The go tool was not found on this system. Install Go')
+    required_go_version = subprocess.check_output([go] + 'list -f {{.GoVersion}} -m'.split()).decode().strip()
+    current_go_version = subprocess.check_output([go, 'version']).decode().strip().split()[2][2:]
+    if parse_go_version(required_go_version) > parse_go_version(current_go_version):
+        raise SystemExit(f'The version of go on this system ({current_go_version}) is too old. go >= {required_go_version} is needed')
     if not for_platform:
         update_go_generated_files(args, os.path.join(launcher_dir, appname))
     cmd = [go, 'build', '-v']
